@@ -3,54 +3,112 @@ from datetime import date
 from getpass import getpass
 from fcbt.storage import save_vault, load_vault
 from fcbt.models import Vault, Entry
+from fcbt.generator import generate_password
 
 VAULT_FILE = "vault.dat"
 
-print("FIRST CITY BANK AND TRUST")
-print("==========================")
-password = getpass("Enter your password : ")
-if os.path.exists("vault.dat"): 
-    print("Vault found !")
-    vault = load_vault(password, VAULT_FILE)
+# -- Colors --
+GREEN = "\033[92m"
+RED = "\033[91m"
+CYAN = "\033[96m"
+YELLOW = "\033[93m"
+DIM = "\033[2m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
+
+def clear():
+    os.system("cls" if os.name == "nt" else "clear")
+
+def banner():
+    print(f"""{YELLOW}{BOLD}
+    ╔══════════════════════════════════════╗
+    ║     FIRST CITY BANK AND TRUST        ║
+    ║          Password Manager            ║
+    ╚══════════════════════════════════════╝{RESET}
+    """)
+
+def success(msg):
+    print(f"\n  {GREEN}[+]{RESET} {msg}")
+
+def error(msg):
+    print(f"\n  {RED}[-]{RESET} {msg}")
+
+def info(msg):
+    print(f"\n  {CYAN}[*]{RESET} {msg}")
+
+def prompt_bar():
+    print(f"  {DIM}{'─' * 40}{RESET}")
+
+def show_menu(entry_count):
+    print(f"  {DIM}Vault: {entry_count} entries{RESET}\n")
+    print(f"  {YELLOW}1{RESET}  Search")
+    print(f"  {YELLOW}2{RESET}  Add entry")
+    print(f"  {YELLOW}3{RESET}  Modify entry")
+    print(f"  {YELLOW}4{RESET}  Delete entry")
+    print(f"  {YELLOW}5{RESET}  Change master password")
+    print(f"  {YELLOW}6{RESET}  Quit")
+    print()
+
+def show_entry(e):
+    print(f"  {BOLD}{e.service}{RESET}")
+    print(f"    Login    : {CYAN}{e.login}{RESET}")
+    print(f"    Password : {GREEN}{e.password}{RESET}")
+    if e.notes:
+        print(f"    Notes    : {e.notes}")
+    print(f"    {DIM}Created {e.created_at} | Updated {e.updated_at}{RESET}")
+
+def separator():
+    print(f"  {DIM}{'─' * 40}{RESET}")
+
+# -- Start --
+clear()
+banner()
+
+password = getpass(f"  {BOLD}Master password :{RESET} ")
+
+if os.path.exists(VAULT_FILE):
+    try:
+        vault = load_vault(password, VAULT_FILE)
+        success("Vault unlocked.")
+    except Exception:
+        error("Wrong password or corrupted vault.")
+        exit(1)
 else:
-    print("No vault found, creating a new one...")
     vault = Vault(entries=[])
+    success("New vault created.")
 
-print("Welcome to your vault !")
+input(f"\n  {DIM}Press Enter to continue...{RESET}")
 
+# -- Main loop --
 while True:
-    print("\nWhat do you want to do ?")
-    print("[1] Find a password")
-    print("[2] Add an entry")
-    print("[3] Modify an entry")
-    print("[4] Delete an entry")
-    print("[5] Change master password")
-    print("[6] Leave")
+    clear()
+    banner()
+    show_menu(len(vault.entries))
 
-    choice = input("> ")
+    prompt_bar()
+    choice = input(f"  {BOLD}>{RESET} ")
 
     if choice == "1":
-        search = input("Service to search : ").lower()
+        separator()
+        search = input("  Service to search : ").lower()
         results = [e for e in vault.entries if search in e.service.lower()]
         if not results:
-            print("No entry found.")
+            error("No entry found.")
         else:
-            for i, e in enumerate(results):
-                print(f"\n--- {e.service} ---")
-                print(f"  Login    : {e.login}")
-                print(f"  Password : {e.password}")
-                print(f"  Notes    : {e.notes}")
-                print(f"  Created  : {e.created_at}")
-                print(f"  Updated  : {e.updated_at}")
+            print()
+            for e in results:
+                show_entry(e)
+                print()
+
     elif choice == "2":
-        service = input("Service : ")
-        login = input("Login : ")
-        pwd = input("Password (leave empty to generate) : ")
+        separator()
+        service = input("  Service : ")
+        login = input("  Login : ")
+        pwd = input(f"  Password {DIM}(empty to generate){RESET} : ")
         if pwd == "":
-            from fcbt.generator import generate_password
             pwd = generate_password()
-            print(f"Generated password : {pwd}")
-        notes = input("Notes : ")
+            info(f"Generated : {GREEN}{pwd}{RESET}")
+        notes = input("  Notes : ")
         today = date.today().strftime("%Y-%m-%d")
         entry = Entry(
             service=service,
@@ -61,22 +119,25 @@ while True:
             updated_at=today,
         )
         vault.entries.append(entry)
-        print(f"Entry for '{service}' added !")
+        success(f"'{service}' added.")
+
     elif choice == "3":
-        search = input("Service to modify : ").lower()
+        separator()
+        search = input("  Service to modify : ").lower()
         results = [e for e in vault.entries if search in e.service.lower()]
         if not results:
-            print("No entry found.")
+            error("No entry found.")
         else:
+            print()
             for i, e in enumerate(results):
-                print(f"[{i}] {e.service} ({e.login})")
-            idx = int(input("Entry number to modify : "))
+                print(f"  {YELLOW}[{i}]{RESET} {e.service} ({e.login})")
+            idx = int(input(f"\n  Entry number : "))
             if 0 <= idx < len(results):
                 entry = results[idx]
-                print("Leave empty to keep current value.")
-                new_login = input(f"Login ({entry.login}) : ")
-                new_pwd = input(f"Password ({entry.password}) : ")
-                new_notes = input(f"Notes ({entry.notes}) : ")
+                print(f"  {DIM}Leave empty to keep current value.{RESET}")
+                new_login = input(f"  Login ({entry.login}) : ")
+                new_pwd = input(f"  Password ({entry.password}) : ")
+                new_notes = input(f"  Notes ({entry.notes}) : ")
                 if new_login:
                     entry.login = new_login
                 if new_pwd:
@@ -84,43 +145,55 @@ while True:
                 if new_notes:
                     entry.notes = new_notes
                 entry.updated_at = date.today().strftime("%Y-%m-%d")
-                print(f"Entry for '{entry.service}' updated !")
+                success(f"'{entry.service}' updated.")
             else:
-                print("Invalid number.")
+                error("Invalid number.")
+
     elif choice == "4":
-        search = input("Service to delete : ").lower()
+        separator()
+        search = input("  Service to delete : ").lower()
         results = [e for e in vault.entries if search in e.service.lower()]
         if not results:
-            print("No entry found.")
+            error("No entry found.")
         else:
+            print()
             for i, e in enumerate(results):
-                print(f"[{i}] {e.service} ({e.login})")
-            idx = int(input("Entry number to delete : "))
+                print(f"  {YELLOW}[{i}]{RESET} {e.service} ({e.login})")
+            idx = int(input(f"\n  Entry number : "))
             if 0 <= idx < len(results):
                 entry = results[idx]
-                confirm = input(f"Delete '{entry.service}' ? (y/n) : ")
+                confirm = input(f"  {RED}Delete '{entry.service}' ? (y/n){RESET} : ")
                 if confirm.lower() == "y":
                     vault.entries.remove(entry)
-                    print(f"Entry for '{entry.service}' deleted !")
+                    success(f"'{entry.service}' deleted.")
                 else:
-                    print("Cancelled.")
+                    info("Cancelled.")
             else:
-                print("Invalid number.")
+                error("Invalid number.")
+
     elif choice == "5":
-        current = getpass("Current master password : ")
+        separator()
+        current = getpass(f"  Current password : ")
         if current != password:
-            print("Wrong password.")
+            error("Wrong password.")
         else:
-            new_pwd = getpass("New master password : ")
-            confirm = getpass("Confirm new master password : ")
+            new_pwd = getpass("  New password : ")
+            confirm = getpass("  Confirm new password : ")
             if new_pwd == confirm:
                 password = new_pwd
-                print("Master password changed ! Will be applied on save.")
+                success("Master password changed.")
             else:
-                print("Passwords don't match.")
+                error("Passwords don't match.")
+
     elif choice == "6":
         save_vault(vault, password, VAULT_FILE)
-        print("Vault saved. Goodbye !")
+        clear()
+        banner()
+        success("Vault saved. Goodbye !")
+        print()
         break
+
     else:
-        print("Invalid choice, try again.")
+        error("Invalid choice.")
+
+    input(f"\n  {DIM}Press Enter to continue...{RESET}")
