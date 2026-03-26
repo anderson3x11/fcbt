@@ -34,7 +34,7 @@ Most password managers require trusting a third party with your secrets. FCBT ta
 ## Screenshots
 
 <p align="center">
-  <img src="assets/Menu.png" alt="Main menu" width="400">
+  <img src="assets/Menu.png" alt="Main menu" width="800">
   <img src="assets/Add Entry.png" alt="Add entry with password generation" width="400">
   <img src="assets/Search.png" alt="Search entry" width="400">
 </p>
