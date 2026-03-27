@@ -1,9 +1,19 @@
 import os
+import threading
 from datetime import date
 from getpass import getpass
+import pyperclip
 from fcbt.storage import save_vault, load_vault
 from fcbt.models import Vault, Entry
 from fcbt.generator import generate_password
+
+
+def copy_to_clipboard(text, timeout=30):
+    pyperclip.copy(text)
+    def clear_clipboard():
+        if pyperclip.paste() == text:
+            pyperclip.copy("")
+    threading.Timer(timeout, clear_clipboard).start()
 
 VAULT_FILE = "vault.dat"
 
@@ -111,9 +121,16 @@ def main():
                 error("No entry found.")
             else:
                 print()
-                for e in results:
+                for i, e in enumerate(results):
+                    print(f"  {YELLOW}[{i}]{RESET} ", end="")
                     show_entry(e)
                     print()
+                copy = input(f"  Copy a password ? (number or enter to skip) : ").strip()
+                if copy != "n" and copy.isdigit():
+                    idx = int(copy)
+                    if 0 <= idx < len(results):
+                        copy_to_clipboard(results[idx].password)
+                        success(f"Password copied ! Auto-clear in 30s.")
 
         elif choice == "2":
             separator()
