@@ -1,0 +1,18 @@
+[project]
+name = "fcbt"
+version = "1.0.0"
+description = "FCBT — Password Manager"
+requires-python = ">=3.10"
+dependencies = [
+    "cryptography",
+]
+
+[project.scripts]
+fcbt = "fcbt.cli:main"
+
+[tool.setuptools]
+packages = ["fcbt"]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
