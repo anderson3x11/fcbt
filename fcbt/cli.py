@@ -64,16 +64,30 @@ def separator():
 clear()
 banner()
 
-password = getpass(f"  {BOLD}Master password :{RESET} ")
-
 if os.path.exists(VAULT_FILE):
-    try:
-        vault = load_vault(password, VAULT_FILE)
-        success("Vault unlocked.")
-    except Exception:
-        error("Wrong password or corrupted vault.")
-        exit(1)
+    while True:
+        password = getpass(f"  {BOLD}Master password :{RESET} ")
+        try:
+            vault = load_vault(password, VAULT_FILE)
+            success("Vault unlocked.")
+            break
+        except Exception:
+            error("Wrong password. Try again.")
 else:
+    print(f"  {DIM}No vault found.{RESET}\n")
+    create = input(f"  Create a new vault ? (y/n) : ").strip().lower()
+    if create != "y":
+        print()
+        success("Goodbye !")
+        print()
+        exit(0)
+    print()
+    while True:
+        password = getpass(f"  {BOLD}Choose a master password :{RESET} ")
+        confirm = getpass(f"  {BOLD}Confirm master password :{RESET} ")
+        if password == confirm:
+            break
+        error("Passwords don't match. Try again.")
     vault = Vault(entries=[])
     success("New vault created.")
 
