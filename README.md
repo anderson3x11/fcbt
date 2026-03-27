@@ -4,8 +4,6 @@
 
 Your passwords never leave your machine. The vault is encrypted at rest with AES (Fernet) using PBKDF2 key derivation.
 
-> Built as a personal project to demonstrate applied cryptography, clean architecture, and secure-by-default design.
-
 ---
 
 ## Why FCBT?
@@ -14,8 +12,7 @@ Most password managers require trusting a third party with your secrets. FCBT ta
 
 - **Zero network access** -- your vault lives on your machine
 - **Strong encryption** -- AES-128 via Fernet with PBKDF2-SHA256 (100,000 iterations)
-- **Minimal dependencies** -- only `cryptography`, everything else is stdlib
-- **Transparent codebase** -- ~200 lines of auditable Python
+- **Minimal dependencies** -- only `cryptography` and `pyperclip`, everything else is stdlib
 
 ---
 
@@ -27,6 +24,9 @@ Most password managers require trusting a third party with your secrets. FCBT ta
 | **CRUD operations** | Add, search, modify, and delete password entries |
 | **Password generator** | Cryptographically secure generation via `secrets` (configurable length & charset) |
 | **Master password** | Change it anytime -- the vault is re-encrypted transparently |
+| **Clipboard copy** | Copy passwords to clipboard with auto-clear after 30 seconds |
+| **Auto-lock** | Vault locks after 2 minutes of inactivity |
+| **First-run setup** | Guided vault creation with master password confirmation |
 | **Colored CLI** | Clean terminal UI with visual feedback and navigation |
 
 ---
@@ -57,6 +57,7 @@ Most password managers require trusting a third party with your secrets. FCBT ta
 
 ```
 fcbt/
+  __main__.py    # Entry point for `python -m fcbt`
   models.py      # Entry & Vault dataclasses
   crypto.py      # Key derivation (PBKDF2) + encrypt/decrypt (Fernet)
   generator.py   # Cryptographically secure password generation
@@ -109,16 +110,18 @@ Master password
 git clone https://github.com/anderson3x11/fcbt.git
 cd fcbt
 python -m venv .venv
-source .venv/bin/activate        # Linux/macOS
-# .venv\Scripts\activate         # Windows
-pip install cryptography
+.venv\Scripts\activate         # Windows
+# source .venv/bin/activate    # Linux/macOS
+pip install -e .
 ```
 
 ### Usage
 
 ```bash
-python -m fcbt.cli
+fcbt
+# or
+python -m fcbt
 ```
 
-On first launch, you set a master password and an empty vault is created.
+On first launch, you'll be asked to create a vault and set a master password.
 On subsequent launches, enter your master password to unlock the existing vault.

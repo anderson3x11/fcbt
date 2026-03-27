@@ -1,4 +1,5 @@
 import os
+import time
 import threading
 from datetime import date
 from getpass import getpass
@@ -16,6 +17,7 @@ def copy_to_clipboard(text, timeout=30):
     threading.Timer(timeout, clear_clipboard).start()
 
 VAULT_FILE = "vault.dat"
+LOCK_TIMEOUT = 120  # 2 minutes
 
 # -- Colors --
 GREEN = "\033[92m"
@@ -104,6 +106,8 @@ def main():
 
     input(f"\n  {DIM}Press Enter to continue...{RESET}")
 
+    last_activity = time.time()
+
     # -- Main loop --
     while True:
         clear()
@@ -112,6 +116,22 @@ def main():
 
         prompt_bar()
         choice = input(f"  {BOLD}>{RESET} ")
+
+        if time.time() - last_activity > LOCK_TIMEOUT:
+            clear()
+            banner()
+            info("Locked due to inactivity.")
+            while True:
+                pwd = getpass(f"\n  {BOLD}Master password :{RESET} ")
+                if pwd == password:
+                    success("Vault unlocked.")
+                    input(f"\n  {DIM}Press Enter to continue...{RESET}")
+                    break
+                error("Wrong password. Try again.")
+            last_activity = time.time()
+            continue
+
+        last_activity = time.time()
 
         if choice == "1":
             separator()
