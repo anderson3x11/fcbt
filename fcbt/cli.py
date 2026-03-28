@@ -3,6 +3,7 @@ import time
 import threading
 from datetime import date
 from getpass import getpass
+from pathlib import Path
 import pyperclip
 from fcbt.storage import save_vault, load_vault
 from fcbt.models import Vault, Entry
@@ -16,7 +17,9 @@ def copy_to_clipboard(text, timeout=30):
             pyperclip.copy("")
     threading.Timer(timeout, clear_clipboard).start()
 
-VAULT_FILE = "vault.dat"
+DATA_DIR = Path.home() / ".fcbt"
+VAULT_FILE = DATA_DIR / "vault.dat"
+
 LOCK_TIMEOUT = 120  # 2 minutes
 
 # -- Colors --
@@ -76,6 +79,8 @@ def main():
     # -- Start --
     clear()
     banner()
+
+    os.makedirs(DATA_DIR, exist_ok=True)
 
     if os.path.exists(VAULT_FILE):
         while True:

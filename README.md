@@ -102,9 +102,27 @@ Master password
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 
-### Installation
+### Installation (global, recommended)
+
+```bash
+git clone https://github.com/anderson3x11/fcbt.git
+cd fcbt
+pipx install .
+```
+
+The `fcbt` command will be available globally from any terminal.
+
+To update to the latest version:
+
+```bash
+cd fcbt
+git pull
+pipx install . --force
+```
+
+### Installation (dev)
 
 ```bash
 git clone https://github.com/anderson3x11/fcbt.git
@@ -119,9 +137,17 @@ pip install -e .
 
 ```bash
 fcbt
-# or
-python -m fcbt
 ```
 
 On first launch, you'll be asked to create a vault and set a master password.
 On subsequent launches, enter your master password to unlock the existing vault.
+
+### Vault location
+
+The encrypted vault is stored in `~/.fcbt/vault.dat`:
+
+| OS | Path |
+|---|---|
+| Windows | `C:\Users\<user>\.fcbt\vault.dat` |
+| Linux | `/home/<user>/.fcbt/vault.dat` |
+| macOS | `/Users/<user>/.fcbt/vault.dat` |
